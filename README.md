@@ -1,4 +1,4 @@
-English | [中文](https://github.com/timminator/VideOCR/blob/master/README_ch.md)
+Just a fork from VideOCR, for the Vietnamese language, using Google Cloud Vision AI.
 
 <p align="center">
 <img src="https://github.com/timminator/VideOCR/blob/master/Pictures/VideOCR.png" alt="VideOCR Icon" width="128">
