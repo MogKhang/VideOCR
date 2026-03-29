@@ -51,19 +51,6 @@ LanguageDetectionMethod=uilanguage
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
-Name: "german"; MessagesFile: "compiler:Languages\German.isl"
-Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
-Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
-Name: "french"; MessagesFile: "compiler:Languages\French.isl"
-Name: "portuguese"; MessagesFile: "compiler:Languages\Portuguese.isl"
-Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
-Name: "arabic"; MessagesFile: "compiler:Languages\Arabic.isl"
-Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
-Name: "indonesian"; MessagesFile: "compiler:Languages\Indonesian.isl"
-Name: "Thai"; MessagesFile: "compiler:Languages\Thai.isl"
-Name: "Korean"; MessagesFile: "compiler:Languages\Korean.isl"
-Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
-Name: "vietnamese"; MessagesFile: "compiler:Languages\Vietnamese.isl"
 
 [Dirs]
 Name: "{app}"; Permissions: everyone-full
