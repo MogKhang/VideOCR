@@ -2226,7 +2226,7 @@ tab2_content = [
             [sg.Button("Check Now", key="-BTN-CHECK_UPDATE_MANUAL-")],
         ], pad=(0, None)),
         sg.Column([
-            [sg.FileBrowse("Browse...", key="-BTN-BROWSE-CRED-", file_types=(("JSON Files", "*.json"), ("All Files", "*.*")))],
+            [sg.FileBrowse("Browse...",target="--google_credentials", key="-BTN-BROWSE-CRED-", file_types=(("JSON Files", "*.json"), ("All Files", "*.*")))],
             [VerticalStrut()],
             [VerticalStrut()],
             [VerticalStrut()],
