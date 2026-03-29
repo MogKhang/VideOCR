@@ -427,6 +427,11 @@ class Video:
 
             success = True
 
+            drain_event.set()
+            for w in writers:
+                w.join()
+            writers.clear()
+
             if len(self.frame_timestamps) > 1:
                 min_idx = min(self.frame_timestamps.keys())
                 max_idx = max(self.frame_timestamps.keys())
@@ -453,19 +458,29 @@ class Video:
             total_images = len(frame_paths)
 
             for i, path in enumerate(frame_paths):
-                print(f"\rStep 2: Performing OCR on image {i + 1} of {total_images}", end="", flush=True)
+                print(f"Step 2/2: Performing OCR on image {i + 1} of {total_images}...", flush=True)
                 frame_filename = os.path.basename(path)
                 
                 # Read the image file into memory
                 with io.open(path, 'rb') as image_file:
                     content = image_file.read()
+                # Skip 0-byte ghost frames safely
+                if not content:
+                    ocr_outputs[frame_filename] = []
+                    continue
                 image = vision.Image(content=content)
-                
-                # Call the Vision API (DOCUMENT_TEXT_DETECTION is best for dense text/subtitles)
-                response = client.document_text_detection(image=image, image_context=image_context)
-                
-                if response.error.message:
-                    raise Exception(f"Vision API Error: {response.error.message}")
+                try:
+                    # Call the Vision API (DOCUMENT_TEXT_DETECTION is best for dense text/subtitles)
+                    response = client.document_text_detection(image=image, image_context=image_context)
+                    
+                    if response.error.message:
+                        print(f"\nWarning: Google API rejected {frame_filename}: {response.error.message}. Skipping.", flush=True)
+                        ocr_outputs[frame_filename] = []
+                        continue
+                except Exception as e:
+                    print(f"\nWarning: API Call failed for {frame_filename}: {str(e)}. Skipping.", flush=True)
+                    ocr_outputs[frame_filename] = []
+                    continue
                 
                 frame_preds = []
                 
@@ -523,7 +538,7 @@ class Video:
                     current_pred.end_index = next_pred.start_index - 1
 
                 if frames:
-                    frames[-1].end_index = ocr_end - 1
+                    frames[-1].end_index = expected_index - 1
 
                 frame_predictions_list[zone_idx] = frames
 
@@ -576,9 +591,18 @@ class Video:
             start_time, end_time = self._get_srt_timestamps(sub)
 
             text = sub.text
+
+            # --- PUNCTUATION CLEANUP ---
+            import re
+            # Snaps punctuation to the previous word ("stupid ?" -> "stupid?")
+            text = re.sub(r'\s+([.,!?;:])', r'\1', text)
+            # Fixes floating apostrophes ("Don ' t" -> "Don't")
+            text = re.sub(r"\s+'\s+", "'", text)
+            # ---------------------------
+
             tag = subtitle_alignments[sub.zone_index]
             if tag:
-                text = f"{{\\{tag}}}{sub.text}"
+                text = f"{{\\{tag}}}{text}"
 
             srt_lines.append(f'{i}\n{start_time} --> {end_time}\n{text}\n\n')
 
