@@ -6,6 +6,9 @@
 # nuitka-project: --include-data-files=Installer/*.ico=VideOCR.ico
 # nuitka-project: --include-data-files=Installer/*.png=VideOCR.png
 # nuitka-project: --include-data-dir=languages=languages
+# nuitka-project: --include-package=google.cloud.vision
+# nuitka-project: --include-package=grpc
+# nuitka-project: --include-package=comtypes
 
 # Windows-specific metadata for the executable
 # nuitka-project-if: {OS} == "Windows":
@@ -234,6 +237,7 @@ except Exception:
 
 # --- Language Data ---
 LANGUAGE_CODE_TO_NATIVE_NAME = {
+    'vi': 'Tiếng Việt',
     'en': 'English',
     'de': 'Deutsch',
     'ch': '中文',
@@ -247,7 +251,6 @@ LANGUAGE_CODE_TO_NATIVE_NAME = {
     'th': 'ไทย',
     'ko': '한국어',
     'ja': '日本語',
-    'vi': 'Tiếng Việt',
 }
 
 # --- Language Data ---
@@ -370,28 +373,6 @@ GUI_SCALING_LIST = [
     ('scale_2_0', '2.0')
 ]
 DEFAULT_GUI_SCALING = 'System Default'
-
-# --- Cross-Platform Cursor Mapping ---
-if sys.platform == "win32":
-    CURSORS = {
-        'vertical': 'size_ns',
-        'horizontal': 'size_we',
-        'diag_nw_se': 'size_nw_se',
-        'diag_ne_sw': 'size_ne_sw',
-        'move': 'fleur',
-        'crosshair': 'crosshair',
-        'normal': 'arrow'
-    }
-else:
-    CURSORS = {
-        'vertical': 'sb_v_double_arrow',
-        'horizontal': 'sb_h_double_arrow',
-        'diag_nw_se': 'bottom_right_corner',
-        'diag_ne_sw': 'bottom_left_corner',
-        'move': 'fleur',
-        'crosshair': 'crosshair',
-        'normal': 'arrow'
-    }
 
 # --- Global Variables ---
 video_path = None
@@ -972,6 +953,7 @@ def get_translated_status(internal_status: str) -> str:
 def get_default_settings() -> dict[str, Any]:
     """Returns a dictionary of default settings."""
     return {
+    '--google_credentials': '',
     '--language': 'en',
     '-LANG_COMBO-': DEFAULT_DISPLAY_LANGUAGE,
     '-SUBTITLE_POS_COMBO-': DEFAULT_INTERNAL_SUBTITLE_POSITION,
@@ -1097,6 +1079,7 @@ def load_settings(window: sg.Window) -> None:
                 update_gui_scaling_combo(window, get_gui_scaling_index(saved_scaling))
 
                 settings_to_load = [
+                    ('--google_credentials', 'input'),
                     ('-LANG_COMBO-', 'combo_lang'),
                     ('--time_start', 'input'),
                     ('--time_end', 'input'),
@@ -2219,6 +2202,7 @@ tab2_content = [
     [sg.Text("VideOCR Settings:", font=("Arial", scale_font_size(10), "bold"), key='-LBL-VIDEOCR_SETTINGS-')],
     [
         sg.Column([
+            [sg.Text("Google Credentials JSON:", size=(30, 1), key='-LBL-GOOGLE-CRED-')],
             [sg.Text("UI Language:", size=(30, 1), key='-LBL-UI_LANG-'), VerticalStrut()],
             [sg.Text("GUI Scaling:", size=(30, 1), key='-LBL-GUI_SCALING-'), VerticalStrut()],
             [sg.Checkbox("Save Crop Box Selection", default=True, key="--save_crop_box", enable_events=True), VerticalStrut()],
@@ -2230,6 +2214,7 @@ tab2_content = [
             [sg.Checkbox("Check for Updates On Startup", default=True, key="--check_for_updates", enable_events=True), VerticalStrut()],
         ], pad=(0, None)),
         sg.Column([
+            [sg.Input("", key="--google_credentials", size=(34, 1), enable_events=True)],
             [sg.Combo(ui_language_display_names, key='-UI_LANG_COMBO-', size=(32, 1), readonly=True, enable_events=True, expand_x=True), VerticalStrut()],
             [sg.Combo([], key='gui_scaling', size=(32, 1), readonly=True, enable_events=True, expand_x=True), VerticalStrut()],
             [VerticalStrut()],
@@ -2241,6 +2226,7 @@ tab2_content = [
             [sg.Button("Check Now", key="-BTN-CHECK_UPDATE_MANUAL-")],
         ], pad=(0, None)),
         sg.Column([
+            [sg.FileBrowse("Browse...", key="-BTN-BROWSE-CRED-", file_types=(("JSON Files", "*.json"), ("All Files", "*.*")))],
             [VerticalStrut()],
             [VerticalStrut()],
             [VerticalStrut()],
@@ -2510,29 +2496,29 @@ def get_resize_hit(x: int | float, y: int | float, boxes: list[dict[str, Any]], 
 
         # Corners
         if near_left and near_top:
-            return idx, 'top-left', CURSORS['diag_nw_se']
+            return idx, 'top-left', 'size_nw_se'
         if near_right and near_bottom:
-            return idx, 'bottom-right', CURSORS['diag_nw_se']
+            return idx, 'bottom-right', 'size_nw_se'
         if near_left and near_bottom:
-            return idx, 'bottom-left', CURSORS['diag_ne_sw']
+            return idx, 'bottom-left', 'size_ne_sw'
         if near_right and near_top:
-            return idx, 'top-right', CURSORS['diag_ne_sw']
+            return idx, 'top-right', 'size_ne_sw'
 
         # Edges
         if near_left:
-            return idx, 'left', CURSORS['horizontal']
+            return idx, 'left', 'size_we'
         if near_right:
-            return idx, 'right', CURSORS['horizontal']
+            return idx, 'right', 'size_we'
         if near_top:
-            return idx, 'top', CURSORS['vertical']
+            return idx, 'top', 'size_ns'
         if near_bottom:
-            return idx, 'bottom', CURSORS['vertical']
+            return idx, 'bottom', 'size_ns'
 
         # Inside box
         if x1 < x < x2 and y1 < y < y2:
-            return idx, 'center', CURSORS['move']
+            return idx, 'center', 'fleur'
 
-    return None, None, CURSORS['crosshair']
+    return None, None, 'crosshair'
 
 
 # --- Bind keyboard events to the graph element ---
@@ -2597,6 +2583,7 @@ if not save_in_video_dir_checked_at_start:
 
 # --- Define the list of keys that, when changed, should trigger a settings save ---
 KEYS_TO_AUTOSAVE = [
+    '--google_credentials',
     '-UI_LANG_COMBO-',
     '-LANG_COMBO-',
     '-SUBTITLE_POS_COMBO-',
