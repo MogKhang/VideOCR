@@ -194,7 +194,6 @@ def main() -> None:
 
         with keep_awake_manager:
             save_subtitles_to_file(
-                ocr_image_max_width=args.ocr_image_max_width,
                 google_credentials=args.google_credentials,
                 video_path=args.video_path,
                 file_path=args.output,
