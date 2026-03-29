@@ -300,33 +300,6 @@ def package_target(build_target: str, args: argparse.Namespace, releases_dir: Pa
     # Download and Extract Dependencies into the temporary CLI folder
     print_header(f"Downloading Dependencies for {display_target_name} target")
 
-    # Format URLs dynamically using the fetched paddle_version
-    raw_support_url = SUPPORT_FILES_URLS[os_name]
-    support_archive_path = download_file(raw_support_url.format(version=paddle_version), temp_cli_dist)
-
-    raw_paddle_urls = PADDLE_URLS[os_name][build_target]
-
-    paddle_url: str | list[str]
-    if isinstance(raw_paddle_urls, list):
-        paddle_url = [u.format(version=paddle_version) for u in raw_paddle_urls]
-    else:
-        paddle_url = raw_paddle_urls.format(version=paddle_version)
-    paddle_archive_path = download_file(paddle_url, temp_cli_dist)
-
-    extract_archive(support_archive_path, temp_cli_dist)
-    extract_archive(paddle_archive_path, temp_cli_dist)
-
-    print("Cleaning up downloaded archives...")
-    os.remove(support_archive_path)
-    if isinstance(paddle_url, list):
-        for url in paddle_url:
-            filename = url.split('/')[-1]
-            filepath = Path(temp_cli_dist) / filename
-            if filepath.exists():
-                os.remove(filepath)
-    else:
-        os.remove(paddle_archive_path)
-
     # Assemble Final Directory Structure
     print_header(f"Assembling Final Directory Structure for {display_target_name}")
 
