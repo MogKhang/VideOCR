@@ -11,7 +11,7 @@ Just a fork from VideOCR, for the Vietnamese language, using Google Cloud Vision
 
 <br>
 
-## ℹ About
+## About
 
 Extract hardcoded (burned-in) subtitles from videos via a simple to use GUI by utilizing the Google Cloud Vision AI OCR engine. Everything can be easily configured via a few clicks.
 
